@@ -1,9 +1,9 @@
 import React, { useState, useContext, useReducer, useEffect } from 'react'
 import cartItems from './data'
 import reducer from './reducer'
-// ATTENTION!!!!!!!!!!
-// I SWITCHED TO PERMANENT DOMAIN
+
 const url = 'https://course-api.com/react-useReducer-cart-project'
+
 const AppContext = React.createContext()
 const initState = {
   loading: false,
@@ -12,11 +12,25 @@ const initState = {
   total : 0,
 }
 
-
-
 const AppProvider = ({ children }) => {
   
   const [state, dispatch] = useReducer(reducer,initState)
+
+  const fetchItems = async() => {
+      dispatch({type: 'LOADING'})
+      const response = await fetch(url);
+      const result = await response.json();
+      dispatch({type : 'GET_ITEMS',payload : result})
+  }
+
+  useEffect(()=>{
+    dispatch({type:'GET_TOTAL'})
+  },[state.cart])
+
+  useEffect(()=>{
+    fetchItems()
+  },[])
+
 
   const clearCart = () => {
     return dispatch({type : 'CLEAR_CART'})
@@ -34,21 +48,16 @@ const AppProvider = ({ children }) => {
     dispatch({type: 'DECREASE_ITEM' , payload: id})
   }
 
-  useEffect(()=>{
-    dispatch({type:'GET_TOTAL'})
-  },[state.cart])
-
+ 
 
   return (
     <AppContext.Provider
-      value={{...state, clearCart, removeItem, increase, decrease}}
-    >
+      value={{...state, clearCart, removeItem, increase, decrease}} >
       {children}
     </AppContext.Provider>
   )
 }
-// make sure use
-export const useGlobalContext = () => {
+ export const useGlobalContext = () => {
   return useContext(AppContext)
 }
 
